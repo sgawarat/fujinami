@@ -1,0 +1,7 @@
+*.db
+x64/
+*.opendb
+*.TMP
+backup/
+build/
+install/

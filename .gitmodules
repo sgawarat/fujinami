@@ -1,0 +1,12 @@
+[submodule "libs/sol2"]
+	path = libs/sol2
+	url = https://github.com/ThePhD/sol2.git
+[submodule "libs/spdlog"]
+	path = libs/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "libs/gsl-lite"]
+	path = libs/gsl-lite
+	url = https://github.com/martinmoene/gsl-lite.git
+[submodule "libs/boost/preprocessor"]
+	path = libs/boost/preprocessor
+	url = https://github.com/boostorg/preprocessor.git
