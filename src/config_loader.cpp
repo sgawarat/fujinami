@@ -47,6 +47,11 @@ LuaLoader::LuaLoader() {
   impl_table.set_function("create_mapping", &LuaLoader::create_mapping, this);
   impl_table.set_function("create_next_layout", &LuaLoader::create_next_layout,
                           this);
+
+  const std::string package_path = lua_["package"]["path"];
+  lua_["package"]["path"] = package_path
+      + ";./config/?.lua"
+      + ";./config/?/init.lua";
 }
 
 LuaLoader::~LuaLoader() noexcept {}
@@ -57,20 +62,7 @@ void LuaLoader::load(KeyboardConfig& config) {
   keys_.clear();
   roles_.clear();
 
-  const char* const FUJINAMI_CONFIG_DIR = "./config/";
-  const char* const FUJINAMI_CONFIG_MODULE_FILENAME = "./config/lib/fujinami.lua";
-  const char* const FUJINAMI_CONFIG_FILENAME = "./fujinami.lua";
-
-  const std::string package_path = lua_["package"]["path"];
-  lua_["package"]["path"] = package_path
-      + ";" + FUJINAMI_CONFIG_DIR + "?.lua"
-      + ";" + FUJINAMI_CONFIG_DIR + "?/init.lua";
-
-  const auto mod_result = lua_.script_file(FUJINAMI_CONFIG_MODULE_FILENAME);
-  if (!mod_result.valid()) {
-    throw LoaderError("failed to load a module file");
-  }
-  const auto result = lua_.script_file(FUJINAMI_CONFIG_FILENAME);
+  const auto result = lua_.script_file("./fujinami.lua");
   if (!result.valid()) {
     throw LoaderError("failed to load a config file");
   }
@@ -140,35 +132,37 @@ void LuaLoader::create_mapping(size_t layout_handle,
       });
 
   Command command;
-  command_tbl.for_each([&](const sol::object& i, const sol::object& action) {
-    switch (action.get_type()) {
-      case sol::type::table: {
-        const auto key_action_tbl = action.as<sol::table>();
-        const int key = key_action_tbl.get_or(1, 0);
-        const int modifiers = key_action_tbl.get_or(2, 0);
-        if (key < 0 || key > KEY_COUNT) throw LoaderError("invalid key");
-        if (modifiers < 0 || modifiers > int(Modifier::ALL)) {
-          throw LoaderError("invalid modifiers");
+  command_tbl.for_each([&](const sol::object& i, const sol::table& any_action_tbl) {
+    if (!any_action_tbl.empty()) {
+      const auto action_type = any_action_tbl.get<sol::object>(1).get_type();
+      switch (any_action_tbl.get<sol::object>(1).get_type()) {
+        case sol::type::number: {
+          const int key = any_action_tbl.get<int>(1);
+          const int modifiers = any_action_tbl.get_or(2, 0);
+          if (key < 0 || key > KEY_COUNT) throw LoaderError("invalid key");
+          if (modifiers < 0 || modifiers > int(Modifier::ALL)) {
+            throw LoaderError("invalid modifiers");
+          }
+          command.emplace_back(
+              KeyAction(static_cast<Key>(key), static_cast<Modifier>(modifiers)));
+          break;
         }
-        command.emplace_back(
-            KeyAction(static_cast<Key>(key), static_cast<Modifier>(modifiers)));
-        break;
-      }
-      case sol::type::string: {
-        const auto char_action_str = action.as<std::string>();
+        case sol::type::string: {
+          const auto char_action_str = any_action_tbl.get<std::string>(1);
 #ifdef _MSC_VER
-        std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> conv;
+          std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> conv;
 #else
-        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+          std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
 #endif
-        auto str = conv.from_bytes(char_action_str);
-        for (auto c : str) {
-          command.emplace_back(CharAction(static_cast<char16_t>(c)));
+          auto str = conv.from_bytes(char_action_str);
+          for (auto c : str) {
+            command.emplace_back(CharAction(static_cast<char16_t>(c)));
+          }
+          break;
         }
-        break;
+        default:
+          throw LoaderError("invalid action");
       }
-      default:
-        throw LoaderError("invalid action");
     }
   });
 
@@ -195,6 +189,8 @@ void LuaLoader::create_next_layout(size_t layout_handle,
 }
 
 LuaLoader::LayoutMap::const_iterator LuaLoader::create_layout(const std::string& name) {
+  if (name.empty()) throw LoaderError("invalid layout name");
+
   const size_t layout_handle = std::hash<std::string>{}(name);
   auto iter = layout_map_.find(layout_handle);
   if (iter != layout_map_.end()) return iter;
