@@ -238,22 +238,25 @@ void update_notification_menu(const f::KeyboardConfig& config) noexcept {
   HMENU im_on_layout_menu = CreatePopupMenu();
   constexpr size_t max_layout_count = 10;
   const size_t size = std::min(max_layout_count, config.layout_count());
+  std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> conv;
   for (size_t i = 0; i < size; ++i) {
     const auto layout = config.layout(i);
     if (layout) {
       const bool is_checked = layout == config.default_layout();
-      AppendMenuA(im_off_layout_menu, MF_STRING | (is_checked ? MF_CHECKED : 0),
-                  IDM_LAYOUT0 + i, layout->name());
+      const auto layout_name_wstr = conv.from_bytes(layout->name());
+      const auto* layout_name = reinterpret_cast<const wchar_t*>(layout_name_wstr.c_str());
+      AppendMenu(im_off_layout_menu, MF_STRING | (is_checked ? MF_CHECKED : 0),
+                 IDM_LAYOUT0 + i, layout_name);
       const bool is_checked_im = layout == config.default_im_layout();
-      AppendMenuA(im_on_layout_menu,
-                  MF_STRING | (is_checked_im ? MF_CHECKED : 0),
-                  IDM_IM_LAYOUT0 + i, layout->name());
+      AppendMenu(im_on_layout_menu,
+                 MF_STRING | (is_checked_im ? MF_CHECKED : 0),
+                 IDM_IM_LAYOUT0 + i, layout_name);
     }
   }
-  ModifyMenuA(notification_hmenu, 0, MF_BYPOSITION | MF_POPUP | MF_STRING,
-              (UINT_PTR)im_off_layout_menu, "IM無効時レイアウト");
-  ModifyMenuA(notification_hmenu, 1, MF_BYPOSITION | MF_POPUP | MF_STRING,
-              (UINT_PTR)im_on_layout_menu, "IM有効時レイアウト");
+  ModifyMenu(notification_hmenu, 0, MF_BYPOSITION | MF_POPUP | MF_STRING,
+              (UINT_PTR)im_off_layout_menu, L"IM無効時レイアウト");
+  ModifyMenu(notification_hmenu, 1, MF_BYPOSITION | MF_POPUP | MF_STRING,
+              (UINT_PTR)im_on_layout_menu, L"IM有効時レイアウト");
 }
 
 bool reload_keyboard_config() {
