@@ -1,0 +1,23 @@
+version: 0.0.{build}
+configuration: Release
+platform: x64
+install:
+- cmd: >-
+    git submodule update --init --recursive
+
+    curl -L "https://downloads.sourceforge.net/project/luabinaries/5.3.3/Windows Libraries/Dynamic/lua-5.3.3_Win64_dll14_lib.zip" -o lua.zip
+
+    7z x lua.zip -o.\libs\lua
+before_build:
+- cmd: >-
+    mkdir install
+
+    cmake . -G "Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=.\install -DLUA_DIR=.\libs\lua
+build:
+  project: C:\projects\fujinami\INSTALL.vcxproj
+  verbosity: minimal
+after_build:
+- cmd: copy .\libs\lua\lua53.dll .\install\
+artifacts:
+- path: install\
+  name: fujinami

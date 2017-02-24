@@ -1,5 +1,7 @@
 # fujinami
 
+[![Build status](https://ci.appveyor.com/api/projects/status/m02emorocv47vunl?svg=true)](https://ci.appveyor.com/project/sgawarat/fujinami)
+
 fujinamiは、クロスプラットフォームなキー配列エミュレータです。
 
 ## ライセンス
