@@ -10,3 +10,6 @@
 [submodule "libs/boost/preprocessor"]
 	path = libs/boost/preprocessor
 	url = https://github.com/boostorg/preprocessor.git
+[submodule "libs/catch"]
+	path = libs/catch
+	url = https://github.com/philsquared/Catch.git
