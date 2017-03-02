@@ -6,7 +6,13 @@ os: linux
 sudo: false
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise
     packages:
+      - gcc-6
+      - g++-6
+      - clang-3.9
       - liblua5.2-dev
 branches:
   only:
@@ -18,4 +24,6 @@ before_install:
   - mkdir install
   - ./cmake-3.7.2-Linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=./install -DCMAKE_BUILD_TYPE=Release .
 install:
-  - make -j4
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
+  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
+  - make -j
