@@ -1,0 +1,19 @@
+language: cpp
+compiler:
+  - clang
+  - gcc
+os: linux
+sudo: false
+addons:
+  apt:
+    package:
+      cmake
+branches:
+  only:
+    - master
+before_install:
+  - git submodule update --init --recursive
+  - mkdir install
+  - cmake . -DCMAKE_INSTALL_PREFIX=./install
+install:
+  - make
