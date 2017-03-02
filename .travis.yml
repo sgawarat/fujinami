@@ -4,10 +4,10 @@ compiler:
   - gcc
 os: linux
 sudo: false
-# addons:
-#   apt:
-#     package:
-#       cmake
+addons:
+  apt:
+    packages:
+      - lua5.2
 branches:
   only:
     - master
