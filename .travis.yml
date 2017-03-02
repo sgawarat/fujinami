@@ -12,10 +12,10 @@ branches:
   only:
     - master
 before_install:
-  - wget --no-check-certificate -O cmake.tar.gz https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz
-  - tar xf cmake.tar.gz
+  - wget --no-check-certificate https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz
+  - tar xf cmake-3.7.2-Linux-x86_64.tar.gz
   - git submodule update --init --recursive
   - mkdir install
-  - ./cmake/bin/cmake -DCMAKE_INSTALL_PREFIX=./install -DCMAKE_BUILD_TYPE=Release .
+  - ./cmake-3.7.2-Linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=./install -DCMAKE_BUILD_TYPE=Release .
 install:
   - make -j4
