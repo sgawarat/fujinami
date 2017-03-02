@@ -12,7 +12,7 @@ branches:
   only:
     - master
 before_install:
-  - wget -O cmake.tar.gz https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz
+  - wget --no-check-certificate -O cmake.tar.gz https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz
   - tar xf cmake.tar.gz
   - git submodule update --init --recursive
   - mkdir build
