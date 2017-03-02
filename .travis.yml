@@ -7,7 +7,7 @@ sudo: false
 addons:
   apt:
     packages:
-      - lua5.2
+      - liblua5.2-dev
 branches:
   only:
     - master
