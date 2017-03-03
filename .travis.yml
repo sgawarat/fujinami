@@ -32,14 +32,11 @@ install:
   - if [[ "$COMPILER" != "" ]]; then export CXX=${COMPILER}; fi
 
   - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
-  - mkdir cmake
   - travis_retry wget --no-check-certificate -qO - ${CMAKE_URL} | tar xz --strip-components=1 -C cmake
   - export PATH=${DEPS_DIR}/cmake/bin:${PATH}
   - cmake --version
 
   - ${CXX} --version
-
-  - git submodule update --init --recursive
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
