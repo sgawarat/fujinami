@@ -1,29 +1,47 @@
-language: cpp
-compiler:
-  - clang
-  - gcc
-os: linux
+language: c++
+
 sudo: false
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise
-    packages:
-      - gcc-6
-      - g++-6
-      - clang-3.9
-      - liblua5.2-dev
+
 branches:
   only:
     - master
-before_install:
-  - wget --no-check-certificate https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz
-  - tar xf cmake-3.7.2-Linux-x86_64.tar.gz
-  - git submodule update --init --recursive
-  - mkdir install
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
-  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
-  - ./cmake-3.7.2-Linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=./install -DCMAKE_BUILD_TYPE=Release .
+
+cache:
+  directories:
+    - deps/cmake
+    - deps/llvm-3.9.0
+
+addons:
+  apt:
+    packages:
+      - g++-6
+      - liblua5.2-dev
+    sources: &sources
+      - ubuntu-toolchain-r-test
+
+matrix:
+  include:
+    - os: linux
+      env: COMPILER=g++-6
+      compiler: gcc
+
 install:
-  - make -j
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+
+  - if [[ "$COMPILER" != "" ]]; then export CXX=${COMPILER}; fi
+
+  - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
+  - mkdir cmake
+  - travis_retry wget --no-check-certificate -qO - ${CMAKE_URL} | tar xz --strip-components=1 -C cmake
+  - export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+  - cmake --version
+
+  - ${CXX} --version
+
+  - git submodule update --init --recursive
+
+before_script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - mkdir build && cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Release
