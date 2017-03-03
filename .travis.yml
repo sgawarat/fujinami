@@ -47,9 +47,9 @@ before_script:
 script:
   make -j && make test
 
-after_script:
-  - cd ${TRAVIS_BUILD_DIR}
-  - lcov --capture --directory . --output-file coverage.info
+after_success:
+  - cd ${TRAVIS_BUILD_DIR}/build
+  - lcov --capture --directory .. --output-file coverage.info
   - lcov --remove coverage.info '/usr/*' --output-file coverage.info
   - lcov --list coverage.info
   - bash <(curl -s https://codecov.io/bash)
