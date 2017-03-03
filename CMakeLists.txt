@@ -61,6 +61,24 @@ if(UNIX AND NOT APPLE)
         ${LUA_LIBRARIES}
     )
 
+    target_include_directories(fujinami_test PUBLIC
+        "${Boost_INCLUDE_DIRS}"
+        "${LUA_INCLUDE_DIR}"
+    )
+    #target_compile_features(fujinami_test PUBLIC cxx_std_14)
+    set_target_properties(fujinami_test PROPERTIES CXX_STANDARD 14)
+    target_compile_options(fujinami_test BEFORE PUBLIC
+        --coverage
+    )
+    target_compile_definitions(fujinami_test PUBLIC
+        $<$<CONFIG:RelWithDebInfo>:DEVEL>
+    )
+    target_link_libraries(fujinami_test
+        gcov
+        pthread
+        ${LUA_LIBRARIES}
+    )
+
     # install(TARGETS fujinami DESTINATION bin)
 
 elseif(MSVC)

@@ -5,7 +5,7 @@ using namespace fujinami;
 using namespace fujinami::buffering;
 
 TEST_CASE("ImmediateKeyFlow", "[fujinami][flow]") {
-  const Key key = to_key(VK_PRINT, false);
+  const Key key = to_key(42);
   const KeyRole key_role = KeyRole::TRIGGER;
   KeyboardConfig config;
   auto unmapped_layout = config.create_layout("unmapped");

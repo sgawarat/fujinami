@@ -4,7 +4,7 @@ sudo: false
 
 branches:
   only:
-    - master
+    - add-tests
 
 cache:
   directories:
@@ -16,6 +16,7 @@ addons:
     packages:
       - g++-6
       - liblua5.2-dev
+      - lcov
     sources: &sources
       - ubuntu-toolchain-r-test
 
@@ -41,7 +42,14 @@ install:
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
   - mkdir build && cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Release
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug
 
 script:
-  make -j
+  make -j && make test
+
+after_script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - lcov --capture --directory . --output-file coverage.info
+  - lcov --remove coverage.info '/usr/*' --output-file coverage.info
+  - lcov --list coverage.info
+  - bash <(curl -s https://codecov.io/bash)
