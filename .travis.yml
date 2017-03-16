@@ -4,11 +4,12 @@ sudo: false
 
 branches:
   only:
-    - master
+    - add-tests
 
 cache:
   directories:
     - deps/cmake
+    - deps/lcov
     - deps/llvm-3.9.0
 
 addons:
@@ -16,6 +17,7 @@ addons:
     packages:
       - g++-6
       - liblua5.2-dev
+      - lcov
     sources: &sources
       - ubuntu-toolchain-r-test
 
@@ -36,12 +38,24 @@ install:
   - export PATH=${DEPS_DIR}/cmake/bin:${PATH}
   - cmake --version
 
+  - LCOV_URL="http://downloads.sourceforge.net/ltp/lcov-1.13.tar.gz"
+  - travis_retry wget --no-check-certificate -qO - ${LCOV_URL} | tar xz --strip-components=1 -C lcov
+  - export PATH=${DEPS_DIR}/lcov/bin:${PATH}
+  - lcov --version
+
   - ${CXX} --version
 
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
   - mkdir build && cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Release
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug
 
 script:
-  make -j
+  make -j && make test
+
+after_success:
+  - cd ${TRAVIS_BUILD_DIR}/build
+  - lcov --gcov-tool "gcov-6" --capture --directory .. --output-file coverage.info
+  - lcov --gcov-tool "gcov-6" --remove coverage.info '/usr/*' --output-file coverage.info
+  - lcov --gcov-tool "gcov-6" --list coverage.info
+  - bash <(curl -s https://codecov.io/bash)

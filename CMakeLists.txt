@@ -20,6 +20,24 @@ target_include_directories(fujinami PUBLIC
     "${PROJECT_SOURCE_DIR}/libs/sol2"
 )
 
+add_executable(fujinami_test
+    src/immediate_key_flow.cpp
+    src/logging.cpp
+    test/immediate_key_flow.cpp
+    test/main.cpp
+)
+target_include_directories(fujinami_test PUBLIC
+    "${PROJECT_SOURCE_DIR}/include"
+    "${PROJECT_SOURCE_DIR}/libs/boost/preprocessor/include"
+    "${PROJECT_SOURCE_DIR}/libs/gsl-lite/include"
+    "${PROJECT_SOURCE_DIR}/libs/spdlog/include"
+    "${LUA_INCLUDE_DIR}"
+    "${PROJECT_SOURCE_DIR}/libs/sol2"
+    "${PROJECT_SOURCE_DIR}/libs/catch/include"
+)
+enable_testing()
+add_test(NAME fujinami_test COMMAND fujinami_test)
+
 if(UNIX AND NOT APPLE)
     #find_package(Boost REQUIRED COMPONENTS preprocessor)
     find_package(Lua REQUIRED)
@@ -39,6 +57,24 @@ if(UNIX AND NOT APPLE)
         $<$<CONFIG:RelWithDebInfo>:DEVEL>
     )
     target_link_libraries(fujinami
+        pthread
+        ${LUA_LIBRARIES}
+    )
+
+    target_include_directories(fujinami_test PUBLIC
+        "${Boost_INCLUDE_DIRS}"
+        "${LUA_INCLUDE_DIR}"
+    )
+    #target_compile_features(fujinami_test PUBLIC cxx_std_14)
+    set_target_properties(fujinami_test PROPERTIES CXX_STANDARD 14)
+    target_compile_options(fujinami_test BEFORE PUBLIC
+        --coverage
+    )
+    target_compile_definitions(fujinami_test PUBLIC
+        $<$<CONFIG:RelWithDebInfo>:DEVEL>
+    )
+    target_link_libraries(fujinami_test
+        gcov
         pthread
         ${LUA_LIBRARIES}
     )
@@ -93,6 +129,28 @@ elseif(MSVC)
         _CRT_SECURE_NO_WARNINGS
         WIN32_LEAN_AND_MEAN
         NOMINMAX
+    )
+
+    target_compile_options(fujinami_test BEFORE PUBLIC
+        /W3
+        /GR-
+    )
+    target_compile_definitions(fujinami_test PUBLIC
+        $<$<CONFIG:RelWithDebInfo>:DEVEL>
+        WIN32
+        _WINDOWS
+        UNICODE
+        _UNICODE
+        _CRT_SECURE_NO_WARNINGS
+        WIN32_LEAN_AND_MEAN
+        NOMINMAX
+    )
+    target_link_libraries(fujinami_test
+        imm32.lib
+        ${LUA_DIR}/lua53.lib
+    )
+    set_target_properties(fujinami_test PROPERTIES LINK_FLAGS
+        "/LIBPATH:$(OutDir)"
     )
 
     add_dependencies(fujinami fujinami_hook)
