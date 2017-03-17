@@ -2,10 +2,6 @@ language: c++
 
 sudo: false
 
-branches:
-  only:
-    - add-tests
-
 cache:
   directories:
     - deps/cmake

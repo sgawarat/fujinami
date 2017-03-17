@@ -1,7 +1,56 @@
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
-project(fujinami VERSION 0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
+project(fujinami)
 
-add_executable(fujinami
+# headers
+set(root_headers
+    "include/fujinami/command.hpp"
+    "include/fujinami/flagset.hpp"
+    "include/fujinami/key.hpp"
+    "include/fujinami/key_property.hpp"
+    "include/fujinami/keyboard.hpp"
+    "include/fujinami/keyboard_config.hpp"
+    "include/fujinami/keyboard_layout.hpp"
+    "include/fujinami/keyset.hpp"
+    "include/fujinami/keyset_property.hpp"
+    "include/fujinami/logging.hpp"
+    "include/fujinami/time.hpp"
+)
+set(buffering_headers
+    "include/fujinami/buffering/context.hpp"
+    "include/fujinami/buffering/engine.hpp"
+    "include/fujinami/buffering/event.hpp"
+    "include/fujinami/buffering/state.hpp"
+)
+set(buffering_flow_headers
+    "include/fujinami/buffering/flow/deferred.hpp"
+    "include/fujinami/buffering/flow/immediate.hpp"
+    "include/fujinami/buffering/flow/result.hpp"
+    "include/fujinami/buffering/flow/simul.hpp"
+)
+set(config_headers
+    "include/fujinami/config/errors.hpp"
+    "include/fujinami/config/loader.hpp"
+)
+set(logging_headers
+    "include/fujinami/logging/macro.hpp"
+    "include/fujinami/logging/print.hpp"
+)
+set(mapping_headers
+    "include/fujinami/mapping/context.hpp"
+    "include/fujinami/mapping/engine.hpp"
+    "include/fujinami/mapping/event.hpp"
+)
+set(platform_headers
+    "include/fujinami/platform/platform.hpp"
+)
+set(platform_win32_headers
+    "include/fujinami/platform/win32/action.hpp"
+    "include/fujinami/platform/win32/key.hpp"
+    "include/fujinami/platform/win32/time.hpp"
+)
+
+#sources
+set(root_sources
     "src/buffering_engine.cpp"
     "src/config_loader.cpp"
     "src/deferred_key_flow.cpp"
@@ -9,6 +58,19 @@ add_executable(fujinami
     "src/keyboard.cpp"
     "src/logging.cpp"
     "src/mapping_engine.cpp"
+    "src/simul_key_flow.cpp"
+)
+
+add_executable(fujinami
+    ${root_headers}
+    ${buffering_headers}
+    ${buffering_flow_headers}
+    ${config_headers}
+    ${logging_headers}
+    ${mapping_headers}
+    ${platform_headers}
+    ${platform_win32_headers}
+    ${root_sources}
 )
 
 target_include_directories(fujinami PUBLIC
