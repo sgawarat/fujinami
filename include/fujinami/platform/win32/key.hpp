@@ -17,7 +17,7 @@ static constexpr size_t KEY_COUNT = 256;
 FUJINAMI_LOGGING_DEFINE_PRINT(inline, Key, key,
                               (os << static_cast<uint32_t>(key);));
 
-inline Key to_key(WORD vk, bool is_extended) noexcept {
+inline Key to_key(WORD vk, bool is_extended = false) noexcept {
   // テンキーはNumLockのON/OFFに関わらず押したキーを返す
   if (!is_extended) {
     switch (vk) {

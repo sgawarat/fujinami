@@ -47,6 +47,12 @@ FlowResult DeferredKeyFlow::reset(State& state) noexcept {
   // active_keysetと組み合わせ可能なキーが存在する場合、
   // 以降のイベントを含めて状態を確定してゆく。
   FUJINAMI_LOG(trace, "begin DEFERRED flow");
+  const auto timeout_dur = state.config() ? (state.config()->timeout_dur()) : Clock::duration::zero();
+  if (timeout_dur < Clock::duration::max()) {
+    timeout_tp_ = front_event.time() + timeout_dur;
+  } else {
+    timeout_tp_ = Clock::time_point::max();
+  }
   observed_event_last_ =
       1;  // 0番目(front_event)はすでに見たので、1から始める。
   consumed_event_last_ =
@@ -62,14 +68,12 @@ FlowResult DeferredKeyFlow::update(State& state) noexcept {
   // 覗き見るイベントが存在しないとき
   if (observed_event_last_ == state.events().size()) {
     // 現在時刻が指定時刻を過ぎている場合、現在の状態で確定する。
-    if (state.has_timeout_tp()) {
-      const auto now = Clock::now();
-      if (now >= state.timeout_tp()) {
-        FUJINAMI_LOG(trace, "timed out (now:{}, timeout:{})", now,
-                     state.timeout_tp());
-        state.consume_events(consumed_event_last_);
-        return FlowResult::DONE;
-      }
+    const auto now = Clock::now();
+    if (timeout_tp_ <= now) {
+      FUJINAMI_LOG(trace, "timed out (now:{}, timeout:{})", now,
+                   timeout_tp_);
+      state.consume_events(consumed_event_last_);
+      return FlowResult::DONE;
     }
     return FlowResult::CONTINUE;
   }
@@ -92,17 +96,20 @@ bool DeferredKeyFlow::is_idle(const State& state) const noexcept {
   return observed_event_last_ == state.events().size();
 }
 
+Clock::time_point DeferredKeyFlow::timeout_tp() const noexcept {
+  return timeout_tp_;
+}
+
+
 FlowResult DeferredKeyFlow::update(const KeyPressEvent& event,
                                    State& state) noexcept {
   FUJINAMI_LOG(debug, "press (event:{})", event);
 
   // イベントが指定時刻以降に届いた場合、現在の状態で確定する。
-  if (state.has_timeout_tp()) {
-    if (event.time() >= state.timeout_tp()) {
-      FUJINAMI_LOG(trace, "timed out (event:{})", event);
-      state.consume_events(consumed_event_last_);
-      return FlowResult::DONE;
-    }
+  if (timeout_tp_ <= event.time()) {
+    FUJINAMI_LOG(trace, "timed out (event:{})", event);
+    state.consume_events(consumed_event_last_);
+    return FlowResult::DONE;
   }
 
   const KeyProperty* key_property = state.find_key_property(event.key());
@@ -162,12 +169,10 @@ FlowResult DeferredKeyFlow::update(const KeyReleaseEvent& event,
   FUJINAMI_LOG(debug, "release (event:{})", event);
 
   // イベントが指定時刻以降に届いた場合、現在の状態で確定する。
-  if (state.has_timeout_tp()) {
-    if (event.time() >= state.timeout_tp()) {
-      FUJINAMI_LOG(trace, "timed out (event:{})", event);
-      state.consume_events(consumed_event_last_);
-      return FlowResult::DONE;
-    }
+  if (timeout_tp_ <= event.time()) {
+    FUJINAMI_LOG(trace, "timed out (event:{})", event);
+    state.consume_events(consumed_event_last_);
+    return FlowResult::DONE;
   }
 
   // 押しているキーを離す場合、現在のキーの組み合わせで確定する合図と解釈する。

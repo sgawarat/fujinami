@@ -32,9 +32,15 @@ class Context final {
     if (is_closed_) return false;
     std::unique_lock<std::mutex> lck(queue_mtx_);
     if (event_queue_.empty()) {
-      queue_cv_.wait_until(lck, timeout_tp, [&]() noexcept {
-        return is_closed_ || !event_queue_.empty();
-      });
+      if (timeout_tp < Clock::time_point::max()) {
+        queue_cv_.wait_until(lck, timeout_tp, [&]() noexcept {
+          return is_closed_ || !event_queue_.empty();
+        });
+      } else {
+        queue_cv_.wait(lck, [&]() noexcept {
+          return is_closed_ || !event_queue_.empty();
+        });
+      }
       if (is_closed_ || event_queue_.empty()) return false;
     }
     event = std::move(event_queue_.front());
@@ -43,16 +49,7 @@ class Context final {
   }
 
   bool receive_event(AnyEvent& event) noexcept {
-    if (is_closed_) return false;
-    std::unique_lock<std::mutex> lck(queue_mtx_);
-    if (event_queue_.empty()) {
-      queue_cv_.wait(
-          lck, [&]() noexcept { return is_closed_ || !event_queue_.empty(); });
-      if (is_closed_ || event_queue_.empty()) return false;
-    }
-    event = std::move(event_queue_.front());
-    event_queue_.pop_front();
-    return true;
+    return receive_event(Clock::time_point::max(), event);
   }
 
   void reset() noexcept {

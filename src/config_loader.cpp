@@ -33,7 +33,7 @@ LuaLoader::LuaLoader() {
       "ALL", int(Modifier::ALL));
 
   lua_.new_enum("FlowType", "IMMEDIATE", int(FlowType::IMMEDIATE), "DEFERRED",
-                int(FlowType::DEFERRED));
+                int(FlowType::DEFERRED), "SIMUL", int(FlowType::SIMUL));
 
   lua_.new_enum("KeyRole", "TRIGGER", int(KeyRole::TRIGGER), "MODIFIER",
                 int(KeyRole::MODIFIER));
@@ -102,7 +102,7 @@ void LuaLoader::create_flow(size_t layout_handle, int key, int flow_type) {
   if (iter == layout_map_.end()) throw LoaderError("invalid layout handle");
   if (key < 0 || key > KEY_COUNT) throw LoaderError("invalid key");
   if (flow_type < int(FlowType::UNKNOWN) ||
-      flow_type > int(FlowType::DEFERRED)) {
+      flow_type > int(FlowType::SIMUL)) {
     throw LoaderError("invalid flow_type");
   }
   if (iter->second && key != 0) {

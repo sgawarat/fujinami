@@ -48,7 +48,6 @@ void Engine::update(NextStageContext& context) noexcept {
     case FlowType::IMMEDIATE: {
       FUJINAMI_LOGGING_SECTION("IMMEDIATE");
       if (immediate_key_flow_.update(state_) == FlowResult::CONTINUE) break;
-      state_.reset_timeout();
       state_.set_next_layout();
       context.send_press(state_.active_keyset(), state_.layout());
       current_flow_ = FlowType::UNKNOWN;
@@ -57,7 +56,14 @@ void Engine::update(NextStageContext& context) noexcept {
     case FlowType::DEFERRED: {
       FUJINAMI_LOGGING_SECTION("DEFERRED");
       if (deferred_key_flow_.update(state_) == FlowResult::CONTINUE) break;
-      state_.reset_timeout();
+      state_.set_next_layout();
+      context.send_press(state_.active_keyset(), state_.layout());
+      current_flow_ = FlowType::UNKNOWN;
+      break;
+    }
+    case FlowType::SIMUL: {
+      FUJINAMI_LOGGING_SECTION("SIMUL");
+      if (simul_key_flow_.update(state_) == FlowResult::CONTINUE) break;
       state_.set_next_layout();
       context.send_press(state_.active_keyset(), state_.layout());
       current_flow_ = FlowType::UNKNOWN;
@@ -77,18 +83,31 @@ bool Engine::is_idle() const noexcept {
       return immediate_key_flow_.is_idle(state_);
     case FlowType::DEFERRED:
       return deferred_key_flow_.is_idle(state_);
+    case FlowType::SIMUL:
+      return simul_key_flow_.is_idle(state_);
   }
   return state_.events().empty();
 }
 
 void Engine::reset() noexcept {
-  config_ = nullptr;
   default_layout_ = nullptr;
   default_im_layout_ = nullptr;
   auto_layout_ = false;
   prev_im_status_ = false;
   state_.reset();
   current_flow_ = FlowType::UNKNOWN;
+}
+
+Clock::time_point Engine::timeout_tp() const noexcept {
+  switch (current_flow_) {
+    case FlowType::IMMEDIATE:
+      return immediate_key_flow_.timeout_tp();
+    case FlowType::DEFERRED:
+      return deferred_key_flow_.timeout_tp();
+    case FlowType::SIMUL:
+      return simul_key_flow_.timeout_tp();
+  }
+  return Clock::time_point::min();
 }
 
 void Engine::update(const KeyPressEvent& event,
@@ -140,9 +159,6 @@ void Engine::update(const KeyPressEvent& event,
       FUJINAMI_LOGGING_SECTION("IMMEDIATE");
       switch (immediate_key_flow_.reset(state_)) {
         case FlowResult::CONTINUE:
-          if (config_->has_timeout_dur()) {
-            state_.set_timeout(event.time() + config_->timeout_dur());
-          }
           current_flow_ = FlowType::IMMEDIATE;
           break;
         case FlowResult::DONE:
@@ -157,10 +173,21 @@ void Engine::update(const KeyPressEvent& event,
       FUJINAMI_LOGGING_SECTION("DEFERRED");
       switch (deferred_key_flow_.reset(state_)) {
         case FlowResult::CONTINUE:
-          if (config_->has_timeout_dur()) {
-            state_.set_timeout(event.time() + config_->timeout_dur());
-          }
           current_flow_ = FlowType::DEFERRED;
+          break;
+        case FlowResult::DONE:
+          state_.set_next_layout();
+          context.send_press(state_.active_keyset(), state_.layout());
+          break;
+      }
+      break;
+    }
+    case FlowType::SIMUL: {
+      FUJINAMI_LOG(trace, "reset SIMUL flow");
+      FUJINAMI_LOGGING_SECTION("SIMUL");
+      switch (simul_key_flow_.reset(state_)) {
+        case FlowResult::CONTINUE:
+          current_flow_ = FlowType::SIMUL;
           break;
         case FlowResult::DONE:
           state_.set_next_layout();
@@ -208,15 +235,13 @@ void Engine::update(const ControlEvent& event,
                     NextStageContext& context) noexcept {
   FUJINAMI_LOG(trace, "control (event:{})", event);
   if (event.config()) {
-    config_ = event.config();
     default_layout_ = event.config()->default_layout();
     default_im_layout_ = event.config()->default_im_layout();
     auto_layout_ = event.config()->auto_layout();
     prev_im_status_ = false;
-    state_.reset(default_layout_);
+    state_.reset(event.config());
     context.send_layout(default_layout_);
   } else {
-    config_ = nullptr;
     default_layout_ = nullptr;
     default_im_layout_ = nullptr;
     auto_layout_ = false;

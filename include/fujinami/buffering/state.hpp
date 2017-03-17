@@ -60,8 +60,9 @@ class State final {
     dontcare_keyset_ = dontcare_keyset;
   }
 
-  void reset(std::shared_ptr<const KeyboardLayout> layout = nullptr) noexcept {
-    layout_ = std::move(layout);
+  void reset(std::shared_ptr<const KeyboardConfig> config = nullptr) noexcept {
+    config_ = std::move(config);
+    layout_ = config_ ? config_->default_layout() : nullptr;
     active_keyset_.reset();
     trigger_keyset_.reset();
     modifier_keyset_.reset();
@@ -98,20 +99,13 @@ class State final {
     events_.erase(events_.begin(), events_.begin() + last);
   }
 
-  void set_timeout(Clock::time_point timeout_tp) noexcept {
-    has_timeout_tp_ = true;
-    timeout_tp_ = timeout_tp;
+  const std::shared_ptr<const KeyboardConfig>& config() const noexcept {
+    return config_;
   }
-
-  void reset_timeout() noexcept { has_timeout_tp_ = false; }
 
   const std::shared_ptr<const KeyboardLayout>& layout() const noexcept {
     return layout_;
   }
-
-  bool has_timeout_tp() const noexcept { return has_timeout_tp_; }
-
-  const Clock::time_point& timeout_tp() const noexcept { return timeout_tp_; }
 
   const std::deque<AnyEvent>& events() const noexcept { return events_; }
 
@@ -124,10 +118,8 @@ class State final {
   const Keyset& dontcare_keyset() const noexcept { return dontcare_keyset_; }
 
  private:
+  std::shared_ptr<const KeyboardConfig> config_;
   std::shared_ptr<const KeyboardLayout> layout_;
-
-  bool has_timeout_tp_ = false;
-  Clock::time_point timeout_tp_ = Clock::time_point::min();
 
   std::deque<AnyEvent> events_;
 

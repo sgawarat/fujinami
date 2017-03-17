@@ -19,6 +19,10 @@ class ImmediateKeyFlow final {
 
   bool is_idle(const State&) const noexcept { return true; }
 
+  Clock::time_point timeout_tp() const noexcept {
+    return Clock::time_point::max();
+  }
+
  private:
 };
 }  // namespace buffering

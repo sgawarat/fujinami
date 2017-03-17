@@ -78,6 +78,11 @@ class KeyboardLayout final {
     return true;
   }
 
+  bool create_mapping(std::initializer_list<Key> keys, std::initializer_list<KeyRole> roles,
+                      Command&& command) {
+    return create_mapping({keys.begin(), keys.size()}, {roles.begin(), roles.size()}, std::move(command));
+  }
+
   bool create_transition(
       const Keyset& active_keyset,
       const std::shared_ptr<const KeyboardLayout>& next_layout) {

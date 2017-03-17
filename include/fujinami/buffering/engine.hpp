@@ -4,6 +4,7 @@
 #include "event.hpp"
 #include "flow/immediate.hpp"
 #include "flow/deferred.hpp"
+#include "flow/simul.hpp"
 
 namespace fujinami {
 namespace mapping {
@@ -33,11 +34,7 @@ class Engine {
 
   void reset() noexcept;
 
-  bool has_timeout_tp() const noexcept { return state_.has_timeout_tp(); }
-
-  const Clock::time_point& timeout_tp() const noexcept {
-    return state_.timeout_tp();
-  }
+  Clock::time_point timeout_tp() const noexcept;
 
  private:
   void update(const KeyPressEvent& event, NextStageContext& context) noexcept;
@@ -46,10 +43,8 @@ class Engine {
               NextStageContext& context) noexcept;
   void update(const ControlEvent& event, NextStageContext& context) noexcept;
 
-  std::shared_ptr<const KeyboardConfig> config_;
   std::shared_ptr<const KeyboardLayout> default_layout_;
   std::shared_ptr<const KeyboardLayout> default_im_layout_;
-
   bool auto_layout_ = false;
   bool prev_im_status_ = false;
 
@@ -57,6 +52,7 @@ class Engine {
   FlowType current_flow_ = FlowType::UNKNOWN;
   ImmediateKeyFlow immediate_key_flow_;
   DeferredKeyFlow deferred_key_flow_;
+  SimulKeyFlow simul_key_flow_;
 };
 }  // namespace buffering
 }  // namespace fujinami

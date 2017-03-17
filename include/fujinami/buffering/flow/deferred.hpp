@@ -16,10 +16,13 @@ class DeferredKeyFlow final {
 
   bool is_idle(const State& state) const noexcept;
 
+  Clock::time_point timeout_tp() const noexcept;
+
  private:
   FlowResult update(const KeyPressEvent& event, State& state) noexcept;
   FlowResult update(const KeyReleaseEvent& event, State& state) noexcept;
 
+  Clock::time_point timeout_tp_;
   size_t observed_event_last_ = 0;  // 次に覗き見るイベントを指す
   size_t consumed_event_last_ = 0;  // 処理後に削除するイベントの終端を指す
   Key repeat_key_ = Key::UNKNOWN;  // キーリピートの対象となるキー

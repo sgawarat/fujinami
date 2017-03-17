@@ -4,7 +4,7 @@
 namespace fujinami {
 namespace logging {
 namespace {
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DEVEL)
 #ifdef FUJINAMI_PLATFORM_WIN32
 FILE* console_fp = nullptr;
 #endif
@@ -16,7 +16,7 @@ thread_local std::vector<size_t> Logger::offsets_;
 thread_local std::string Logger::buffer_;
 
 void Logger::init() {
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DEVEL)
 #ifdef FUJINAMI_PLATFORM_WIN32
   AllocConsole();
   freopen_s(&console_fp, "CONOUT$", "w", stdout);
@@ -53,7 +53,7 @@ void Logger::init_tls(gsl::not_null<gsl::czstring> name) {
 void Logger::terminate() {
   logger_.reset();
   spdlog::drop_all();
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(DEVEL)
 #ifdef FUJINAMI_PLATFORM_WIN32
   fclose(console_fp);
   FreeConsole();

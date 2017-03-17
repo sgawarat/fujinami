@@ -18,13 +18,7 @@ bool Keyboard::open() {
       if (b_context_.is_closed()) break;
       if (b_engine_.is_idle()) {
         AnyEvent event;
-        bool result = false;
-        if (b_engine_.has_timeout_tp()) {
-          result = b_context_.receive_event(b_engine_.timeout_tp(), event);
-        } else {
-          result = b_context_.receive_event(event);
-        }
-        if (result) {
+        if (b_context_.receive_event(b_engine_.timeout_tp(), event)) {
           b_engine_.update(event, m_context_);
         } else {
           if (b_context_.is_closed()) break;
