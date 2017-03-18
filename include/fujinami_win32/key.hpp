@@ -4,7 +4,7 @@
 #include <array>
 #include <tuple>
 #include <gsl/gsl>
-#include "../../logging.hpp"
+#include <fujinami/logging.hpp>
 
 namespace fujinami {
 enum class Key : uint8_t {

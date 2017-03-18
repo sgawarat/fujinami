@@ -1,0 +1,6 @@
+add_subdirectory(common)
+if(UNIX AND NOT APPLE)
+    add_subdirectory(linux)
+elseif(MSVC)
+    add_subdirectory(win32)
+endif()

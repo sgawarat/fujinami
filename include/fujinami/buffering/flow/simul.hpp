@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "../../flagset.hpp"
-#include "../../logging.hpp"
+#include <fujinami/flagset.hpp>
+#include <fujinami/logging.hpp>
 #include "../state.hpp"
 #include "../event.hpp"
 #include "result.hpp"

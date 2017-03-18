@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "../../logging.hpp"
+#include <fujinami/logging.hpp>
 #include "../event.hpp"
 #include "../state.hpp"
 #include "result.hpp"

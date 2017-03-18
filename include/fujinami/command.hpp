@@ -5,11 +5,11 @@
 #include <type_traits>
 #include <vector>
 #include "logging.hpp"
-#include "platform/platform.hpp"
+#include "platform.hpp"
 #if defined(FUJINAMI_PLATFORM_WIN32)
-#include "platform/win32/action.hpp"
+#include <fujinami_win32/action.hpp>
 #elif defined(FUJINAMI_PLATFORM_LINUX)
-#include "platform/linux/action.hpp"
+#include <fujinami_linux/action.hpp>
 #endif
 
 namespace fujinami {

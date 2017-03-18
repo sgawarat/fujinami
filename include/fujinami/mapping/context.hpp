@@ -4,7 +4,7 @@
 #include <condition_variable>
 #include <deque>
 #include <mutex>
-#include "../logging.hpp"
+#include <fujinami/logging.hpp>
 #include "event.hpp"
 #include "engine.hpp"
 

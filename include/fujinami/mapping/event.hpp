@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include <cstdint>
-#include "../logging.hpp"
-#include "../keyset.hpp"
+#include <fujinami/logging.hpp>
+#include <fujinami/keyset.hpp>
 
 namespace fujinami {
 namespace mapping {

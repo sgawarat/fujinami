@@ -3,7 +3,7 @@
 #include <deque>
 #include <mutex>
 #include <condition_variable>
-#include "../logging.hpp"
+#include <fujinami/logging.hpp>
 #include "event.hpp"
 #include "engine.hpp"
 

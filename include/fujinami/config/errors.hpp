@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <gsl/gsl>
 #include <spdlog/fmt/fmt.h>
-#include "../logging.hpp"
+#include <fujinami/logging.hpp>
 
 namespace fujinami {
 namespace config {

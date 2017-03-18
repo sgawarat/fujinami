@@ -1,9 +1,9 @@
 ﻿#pragma once
 
 #include <gsl/gsl>
-#include "../command.hpp"
-#include "../keyboard_config.hpp"
-#include "../keyboard_layout.hpp"
+#include <fujinami/command.hpp>
+#include <fujinami/keyboard_config.hpp>
+#include <fujinami/keyboard_layout.hpp>
 #include "event.hpp"
 
 namespace fujinami {

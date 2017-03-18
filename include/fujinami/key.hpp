@@ -1,11 +1,11 @@
 ﻿#pragma once
 
 #include "flagset.hpp"
-#include "platform/platform.hpp"
+#include "platform.hpp"
 #if defined(FUJINAMI_PLATFORM_WIN32)
-#include "platform/win32/key.hpp"
+#include <fujinami_win32/key.hpp>
 #elif defined(FUJINAMI_PLATFORM_LINUX)
-#include "platform/linux/key.hpp"
+#include <fujinami_linux/key.hpp>
 #endif
 
 namespace fujinami {

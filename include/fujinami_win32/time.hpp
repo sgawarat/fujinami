@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 #include <chrono>
-#include "../../logging.hpp"
+#include <fujinami/logging.hpp>
 
 namespace fujinami {
 struct Win32Clock final {

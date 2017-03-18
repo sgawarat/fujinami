@@ -4,7 +4,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <sol.hpp>
-#include "../keyboard_config.hpp"
+#include <fujinami/logging.hpp>
+#include <fujinami/keyboard_config.hpp>
 #include "errors.hpp"
 
 namespace fujinami {

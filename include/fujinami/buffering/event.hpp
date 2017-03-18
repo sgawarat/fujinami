@@ -1,11 +1,11 @@
 ﻿#pragma once
 
 #include <new>
-#include "../logging.hpp"
-#include "../key.hpp"
-#include "../time.hpp"
-#include "../keyboard_config.hpp"
-#include "../keyboard_layout.hpp"
+#include <fujinami/logging.hpp>
+#include <fujinami/key.hpp>
+#include <fujinami/time.hpp>
+#include <fujinami/keyboard_config.hpp>
+#include <fujinami/keyboard_layout.hpp>
 
 namespace fujinami {
 namespace buffering {

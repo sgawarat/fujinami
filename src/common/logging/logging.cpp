@@ -1,5 +1,5 @@
 ﻿#include <fujinami/logging.hpp>
-#include <fujinami/platform/platform.hpp>
+#include <fujinami/platform.hpp>
 
 namespace fujinami {
 namespace logging {
