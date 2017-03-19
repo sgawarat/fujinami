@@ -1,23 +1,50 @@
 version: 0.0.{build}
-configuration: Release
+branches:
+  only:
+  - master
+configuration:
+- Release
+- Debug
 platform: x64
 install:
 - cmd: >-
     git submodule update --init --recursive
 
+    mkdir deps
+
+    cd deps
+
     curl -L "https://downloads.sourceforge.net/project/luabinaries/5.3.3/Windows Libraries/Dynamic/lua-5.3.3_Win64_dll14_lib.zip" -o lua.zip
 
-    7z x lua.zip -o.\libs\lua
+    7z x lua.zip -o.\lua
+cache: deps\lua
 before_build:
 - cmd: >-
+    cd %APPVEYOR_BUILD_FOLDER%
+
     mkdir install
 
-    cmake . -G "Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=.\install -DLUA_DIR=.\libs\lua
+    mkdir build
+
+    cd build
+
+    cmake .. -G "Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=%APPVEYOR_BUILD_FOLDER%/install -DLUA_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/deps/lua/include -DLUA_LIBRARY=%APPVEYOR_BUILD_FOLDER%/deps/lua/lua53.lib
 build:
-  project: C:\projects\fujinami\INSTALL.vcxproj
+  project: C:\projects\fujinami\build\ALL_BUILD.vcxproj
+  parallel: true
   verbosity: minimal
 after_build:
-- cmd: copy .\libs\lua\lua53.dll .\install\
+- cmd: >-
+    cd %APPVEYOR_BUILD_FOLDER%
+
+    copy .\deps\lua\lua53.dll .\install\
+test_script:
+- cmd: >-
+    cd %APPVEYOR_BUILD_FOLDER%
+
+    cd build
+
+    ctest -V -C %CONFIGURATION%
 artifacts:
 - path: install\
   name: fujinami
