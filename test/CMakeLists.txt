@@ -9,5 +9,4 @@ target_include_directories(fujinami_test PRIVATE
 target_link_libraries(fujinami_test
     fujinami_common)
 
-enable_testing()
 add_test(NAME fujinami_test COMMAND fujinami_test)
