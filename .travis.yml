@@ -44,7 +44,7 @@ install:
 before_script:
   - cd ${TRAVIS_BUILD_DIR}
   - mkdir build && cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CODECOVERAGE
+  - cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CODECOVERAGE=ON
 
 script:
   make -j && make test
