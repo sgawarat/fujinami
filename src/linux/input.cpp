@@ -1,11 +1,11 @@
-﻿#include <fujinami/platform/linux/input.hpp>
-#include <fujinami/logging.hpp>
-#include <cassert>
+﻿#include <cassert>
 #include <cstring>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <linux/uinput.h>
+#include <fujinami/logging.hpp>
+#include <fujinami_linux/input.hpp>
 
 namespace fujinami {
 namespace {

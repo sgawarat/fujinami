@@ -4,8 +4,8 @@
 #include <fujinami/time.hpp>
 #include <fujinami/keyboard.hpp>
 #include <fujinami/keyboard_config.hpp>
-#include <fujinami/platform/linux/input.hpp>
 #include <fujinami/config/loader.hpp>
+#include <fujinami_linux/input.hpp>
 
 namespace f = fujinami;
 namespace fl = fujinami::logging;

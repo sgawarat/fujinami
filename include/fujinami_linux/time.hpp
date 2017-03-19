@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <sys/time.h>
-#include "../../logging.hpp"
+#include <fujinami/logging.hpp>
 
 namespace fujinami {
 constexpr std::chrono::microseconds to_duration(const timeval& tv) noexcept {

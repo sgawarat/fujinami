@@ -6,3 +6,4 @@ backup/
 build/
 install/
 /.vs
+/.vscode

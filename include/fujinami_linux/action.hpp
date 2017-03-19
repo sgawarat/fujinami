@@ -2,9 +2,9 @@
 
 #include <array>
 #include <gsl/gsl>
-#include "../../logging.hpp"
-#include "../../flagset.hpp"
-#include "../../key.hpp"
+#include <fujinami/logging.hpp>
+#include <fujinami/flagset.hpp>
+#include <fujinami/key.hpp>
 #include "input.hpp"
 
 namespace fujinami {
