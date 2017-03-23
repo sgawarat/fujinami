@@ -41,7 +41,6 @@ class LuaLoader final {
 
   LayoutMap::const_iterator create_layout(const std::string& name);
 
-  sol::state lua_;
   KeyboardConfig* config_ = nullptr;
   LayoutMap layout_map_;
   std::vector<Key> keys_;

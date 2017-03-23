@@ -1,27 +1,163 @@
 ﻿#include <fujinami/config/loader.hpp>
 #include <string>
 #include <codecvt>
+#include <fstream>
 #include <sol.hpp>
+#include <fujinami/platform.hpp>
 #include <fujinami/keyboard_config.hpp>
 #include <fujinami/config/errors.hpp>
 
 namespace fujinami {
 namespace config {
-LuaLoader::LuaLoader() {
-  lua_.open_libraries(sol::lib::base, sol::lib::package, sol::lib::coroutine,
-                      sol::lib::string, sol::lib::os, sol::lib::math,
-                      sol::lib::table, sol::lib::debug, sol::lib::bit32,
-                      sol::lib::io, sol::lib::jit, sol::lib::utf8);
+namespace {
+// package_pathに列挙されたテンプレートを用いてスクリプトを読み込む。
+sol::object load_script(sol::state_view& lua,
+                        const std::string& package_path,
+                        const std::vector<char>& mod_path) {
+  const auto last = package_path.end();
+  auto iter = package_path.begin();
+  std::string path;
+  path.reserve(MAX_PATH);
+  while (true) {
+    char c;
+    if (iter == last) {
+      c = ';';
+    } else {
+      c = *iter;
+    }
+
+    switch (c) {
+      case ';': {
+        if (!path.empty()) {
+#if defined(FUJINAMI_PLATFORM_WIN32)
+          std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
+          const auto wpath = conv.from_bytes(path.data());
+#elif defined(FUJINAMI_PLATFORM_LINUX)
+          const auto& wpath = path;
+#endif
+          std::ifstream ifs(wpath);
+          if (ifs.is_open()) {
+            ifs.seekg(0, std::ios::end);
+            const auto end_pos = ifs.tellg();
+            ifs.clear();
+            ifs.seekg(0, std::ios::beg);
+            const auto beg_pos = ifs.tellg();
+            const size_t len = end_pos - beg_pos;
+
+            std::vector<char> code(len);
+            if (len > 0) ifs.read(code.data(), code.size());
+            const auto result = lua.script(std::string(code.data(), code.size()));
+            if (result.valid()) return result.get<sol::object>();
+          }
+
+          path.clear();
+        }
+        if (iter == last) return sol::nil;
+        break;
+      }
+      case '?': {
+        path.insert(path.end(), mod_path.begin(), mod_path.end());
+        break;
+      }
+      default: {
+        path.push_back(c);
+        break;
+      }
+    }
+    ++iter;
+  }
+
+  assert("UNREACHABLE");
+  return sol::nil;
+}
+
+// パス文字列をUnicodeに変換してからスクリプトを読み込む
+sol::object wrequire(sol::this_state& self, const std::string& modname) {
+  sol::state_view lua(self.L);
+
+  const auto& package = lua["package"];
+  const auto& package_preload = package["preload"];
+
+  // 読み込み済みオブジェクトが存在する場合、それを返す。
+  auto& preloaded_module = package_preload[modname];
+  if (preloaded_module.valid()) return preloaded_module;
+
+  // Luaのモジュール名をパス形式に変換する。
+  std::vector<char> mod_path;
+  mod_path.reserve(modname.size());
+  for (char c : modname) {
+    if (c == '.') {
+      mod_path.push_back('\\');
+    } else {
+      mod_path.push_back(c);
+    }
+  }
+
+  const std::string& package_path = package["path"];
+
+  // スクリプト読み込みが成功した場合、その戻り値を返す。
+  auto ret = load_script(lua, package_path, mod_path);
+  if (ret.valid()) {
+    preloaded_module = ret;
+    return ret;
+  }
+
+  // エラーメッセージを生成して、例外を投げる。
+  std::string error_message = "module '" + modname + "' not found:\n\tno field package.preload['" + modname + "']\n";
+  std::string path;
+  path.reserve(MAX_PATH);
+  for (const char c : package_path) {
+    switch (c) {
+      case ';': {
+        if (!path.empty()) {
+          error_message += "\tno file '" + path + "'\n";
+          path.clear();
+        }
+        break;
+      }
+      case '?': {
+        path.insert(path.end(), mod_path.begin(), mod_path.end());
+        break;
+      }
+      default: {
+        path.push_back(c);
+        break;
+      }
+    }
+  }
+  if (!path.empty()) error_message += "\tno file '" + path + "'\n";
+
+  throw sol::error(std::move(error_message));
+}
+}  // namespace
+
+LuaLoader::LuaLoader() {}
+
+LuaLoader::~LuaLoader() noexcept {}
+
+void LuaLoader::load(KeyboardConfig& config) {
+  config_ = &config;
+  layout_map_.clear();
+  keys_.clear();
+  roles_.clear();
+
+  sol::state lua;
+  lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::coroutine,
+                     sol::lib::string, sol::lib::os, sol::lib::math,
+                     sol::lib::table, sol::lib::debug, sol::lib::bit32,
+                     sol::lib::io, sol::lib::jit, sol::lib::utf8);
+
+  lua.set_function("wrequire", &wrequire);
 
 #if defined(FUJINAMI_PLATFORM_WIN32)
-  lua_.new_enum("Platform", "NAME", "win32",
+  lua.new_enum("Platform", "NAME", "win32",
                 "WIN32", true, "LINUX", false);
 #elif defined(FUJINAMI_PLATFORM_LINUX)
-  lua_.new_enum("Platform", "NAME", "linux",
+  lua.new_enum("Platform", "NAME", "linux",
                 "WIN32", false, "LINUX", true);
 #endif
 
-  lua_.new_enum(
+  lua.new_enum(
       "Mod", "SHIFT", int(Modifier::SHIFT_LEFT), "CONTROL",
       int(Modifier::CONTROL_LEFT), "ALT", int(Modifier::ALT_LEFT), "OS",
       int(Modifier::OS_LEFT), "SHIFT_LEFT", int(Modifier::SHIFT_LEFT),
@@ -32,13 +168,13 @@ LuaLoader::LuaLoader() {
       "OS_RIGHT", int(Modifier::OS_RIGHT), "OS_RIGHT", int(Modifier::OS_RIGHT),
       "ALL", int(Modifier::ALL));
 
-  lua_.new_enum("FlowType", "IMMEDIATE", int(FlowType::IMMEDIATE), "DEFERRED",
+  lua.new_enum("FlowType", "IMMEDIATE", int(FlowType::IMMEDIATE), "DEFERRED",
                 int(FlowType::DEFERRED), "SIMUL", int(FlowType::SIMUL));
 
-  lua_.new_enum("KeyRole", "TRIGGER", int(KeyRole::TRIGGER), "MODIFIER",
+  lua.new_enum("KeyRole", "TRIGGER", int(KeyRole::TRIGGER), "MODIFIER",
                 int(KeyRole::MODIFIER));
 
-  auto impl_table = lua_.create_named_table("fujinami");
+  auto impl_table = lua.create_named_table("fujinami");
   impl_table.set_function("set_global_option", &LuaLoader::set_global_option,
                           this);
   impl_table.set_function("get_layout_handle", &LuaLoader::get_layout_handle,
@@ -48,21 +184,12 @@ LuaLoader::LuaLoader() {
   impl_table.set_function("create_next_layout", &LuaLoader::create_next_layout,
                           this);
 
-  const std::string package_path = lua_["package"]["path"];
-  lua_["package"]["path"] = package_path
+  const std::string package_path = lua["package"]["path"];
+  lua["package"]["path"] = package_path
       + ";./config/?.lua"
       + ";./config/?/init.lua";
-}
 
-LuaLoader::~LuaLoader() noexcept {}
-
-void LuaLoader::load(KeyboardConfig& config) {
-  config_ = &config;
-  layout_map_.clear();
-  keys_.clear();
-  roles_.clear();
-
-  const auto result = lua_.script_file("./fujinami.lua");
+  const auto result = lua.script_file("./fujinami.lua");
   if (!result.valid()) {
     throw LoaderError("failed to load a config file");
   }
