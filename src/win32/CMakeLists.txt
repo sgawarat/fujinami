@@ -42,5 +42,5 @@ add_dependencies(fujinami
 )
 
 # install
-#install(TARGETS fujinami DESTINATION .)
-#install(TARGETS fujinami_hook RUNTIME DESTINATION .)
+install(TARGETS fujinami DESTINATION .)
+install(TARGETS fujinami_hook RUNTIME DESTINATION .)

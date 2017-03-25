@@ -7,4 +7,4 @@ target_link_libraries(fujinami PRIVATE
 )
 
 # include
-#install(TARGETS fujinami DESTINATION bin)
+install(TARGETS fujinami DESTINATION .)
