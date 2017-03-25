@@ -52,6 +52,6 @@ script:
 after_success:
   - cd ${TRAVIS_BUILD_DIR}/build
   - lcov --gcov-tool "gcov-6" --capture --directory .. --output-file coverage.info
-  - lcov --gcov-tool "gcov-6" --remove coverage.info '/usr/*' --output-file coverage.info
+  - lcov --gcov-tool "gcov-6" --remove coverage.info '/usr/*' $TRAVIS_BUILD_DIR'/libs/*' --output-file coverage.info
   - lcov --gcov-tool "gcov-6" --list coverage.info
   - bash <(curl -s https://codecov.io/bash)

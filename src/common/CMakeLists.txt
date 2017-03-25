@@ -31,7 +31,7 @@ if(UNIX AND NOT APPLE)
 
     if(ENABLE_CODECOVERAGE)
         target_compile_options(fujinami_common BEFORE PUBLIC
-            --coverage
+            -O0 --coverage
         )
         target_link_libraries(fujinami_common PUBLIC
             gcov

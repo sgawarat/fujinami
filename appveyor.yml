@@ -14,10 +14,9 @@ install:
 
     cd deps
 
-    curl -L "https://downloads.sourceforge.net/project/luabinaries/5.3.3/Windows Libraries/Dynamic/lua-5.3.3_Win64_dll14_lib.zip" -o lua.zip
+    "C:\Program Files\Git\mingw64\bin\curl.exe" -L "https://downloads.sourceforge.net/project/luabinaries/5.3.3/Windows Libraries/Dynamic/lua-5.3.3_Win64_dll14_lib.zip" -o lua.zip
 
     7z x lua.zip -o.\lua
-cache: deps\lua
 before_build:
 - cmd: >-
     cd %APPVEYOR_BUILD_FOLDER%
