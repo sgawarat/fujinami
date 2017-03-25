@@ -17,7 +17,6 @@ sol::object load_script(sol::state_view& lua,
   const auto last = package_path.end();
   auto iter = package_path.begin();
   std::string path;
-  path.reserve(MAX_PATH);
   while (true) {
     char c;
     if (iter == last) {
@@ -72,14 +71,14 @@ sol::object load_script(sol::state_view& lua,
 }
 
 // パス文字列をUnicodeに変換してからスクリプトを読み込む
-sol::object wrequire(sol::this_state& self, const std::string& modname) {
+sol::object wrequire(sol::this_state self, const std::string& modname) {
   sol::state_view lua(self.L);
 
   const auto& package = lua["package"];
   const auto& package_preload = package["preload"];
 
   // 読み込み済みオブジェクトが存在する場合、それを返す。
-  auto& preloaded_module = package_preload[modname];
+  auto preloaded_module = package_preload[modname];
   if (preloaded_module.valid()) return preloaded_module;
 
   // Luaのモジュール名をパス形式に変換する。
@@ -87,7 +86,7 @@ sol::object wrequire(sol::this_state& self, const std::string& modname) {
   mod_path.reserve(modname.size());
   for (char c : modname) {
     if (c == '.') {
-      mod_path.push_back('\\');
+      mod_path.push_back('/');
     } else {
       mod_path.push_back(c);
     }
@@ -105,7 +104,6 @@ sol::object wrequire(sol::this_state& self, const std::string& modname) {
   // エラーメッセージを生成して、例外を投げる。
   std::string error_message = "module '" + modname + "' not found:\n\tno field package.preload['" + modname + "']\n";
   std::string path;
-  path.reserve(MAX_PATH);
   for (const char c : package_path) {
     switch (c) {
       case ';': {
