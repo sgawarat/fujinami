@@ -1,5 +1,6 @@
 add_executable(fujinami_test
     immediate_key_flow.cpp
+    simul_key_flow.cpp
     main.cpp
 )
 set_target_properties(fujinami_test PROPERTIES CXX_STANDARD 14)

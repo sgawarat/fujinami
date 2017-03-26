@@ -28,7 +28,7 @@ FlowResult SimulKeyFlow::reset(State& state) noexcept {
   release_timeout_tp_ = front_event.time() + timeout_dur / 2;  // TODO:
   observed_event_last_ = 0;  // front_eventはpopするので0から始める。
   modifier_keyset_ = state.modifier_keyset();
-  dontcare_keyset_ = state.dontcare_keyset();
+  dontcare_keyset_ = state.dontcare_keyset() + front_event.key();
   pre_released_keyset_.reset();
   post_released_keyset_.reset();
   first_key_ = front_event.key();
@@ -203,11 +203,11 @@ void SimulKeyFlow::consume(State& state) noexcept {
       const auto p1 = second_begin_tp_ - first_begin_tp_;
       const auto p3 = third_begin_tp_ - second_begin_tp_;
       if (p1 <= p3 &&
-          second_begin_tp_ <= press_timeout_tp_) {
+          second_begin_tp_ < press_timeout_tp_) {
         is_simul = true;
       }
     } else {
-      if (second_begin_tp_ <= press_timeout_tp_) {
+      if (second_begin_tp_ < press_timeout_tp_) {
         is_simul = true;
       }
     }
@@ -241,7 +241,7 @@ void SimulKeyFlow::consume(State& state) noexcept {
       state.apply(active_keyset,
                   keyset_property->trigger_keyset(),
                   keyset_property->modifier_keyset(),
-                  dontcare_keyset_);
+                  first_key_);
     } else {
       FUJINAMI_LOG(trace, "unregistered or unmapped (keyset:{})", active_keyset);
       state.press_none_key(first_key_);
