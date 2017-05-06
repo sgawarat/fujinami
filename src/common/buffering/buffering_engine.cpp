@@ -107,7 +107,7 @@ Clock::time_point Engine::timeout_tp() const noexcept {
     case FlowType::SIMUL:
       return simul_key_flow_.timeout_tp();
   }
-  return Clock::time_point::min();
+  return Clock::time_point::max();
 }
 
 void Engine::update(const KeyPressEvent& event,
