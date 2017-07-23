@@ -213,6 +213,17 @@ void SimulKeyFlow::consume(State& state) noexcept {
     }
   }
 
+  // 同時打鍵しているが同時押しを登録していない場合、第1キーを単打したと解釈する。  
+  // TODO: もっと同時打鍵に優しい方法を考える
+  if (is_simul) {
+    const Keyset fixed_modifier_keyset = state.modifier_keyset() - pre_released_keyset_;
+    const Keyset active_keyset = fixed_modifier_keyset + first_key_ + second_key_;
+    const KeysetProperty* keyset_property = state.find_keyset_property(active_keyset);
+    if (!keyset_property || !keyset_property->is_mapped()) {
+      is_simul = false;
+    }
+  }
+
   if (is_simul) {
     // 第1キーと第2キーが同時打鍵したとして、状態を更新する。
     const Keyset fixed_modifier_keyset = state.modifier_keyset() - pre_released_keyset_;
