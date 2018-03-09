@@ -213,7 +213,7 @@ void Engine::update(const KeyPressEvent& event,
       FUJINAMI_LOGGING_SECTION("DUAL");
       switch (dual_key_flow_.reset(state_)) {
         case FlowResult::CONTINUE:
-          current_flow_ = FlowType::SIMUL;
+          current_flow_ = FlowType::DUAL;
           break;
         case FlowResult::DONE:
           state_.set_next_layout();
