@@ -3,6 +3,7 @@ add_library(fujinami_common STATIC
     buffering/flow/deferred_key_flow.cpp
     buffering/flow/immediate_key_flow.cpp
     buffering/flow/simul_key_flow.cpp
+    buffering/flow/dual_key_flow.cpp
     config/config_loader.cpp
     logging/logging.cpp
     mapping/mapping_engine.cpp

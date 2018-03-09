@@ -11,9 +11,10 @@ enum class FlowType : uint8_t {
   IMMEDIATE,
   DEFERRED,
   SIMUL,
+  DUAL,
 };
 FUJINAMI_LOGGING_ENUM(inline, FlowType,
-                      (UNKNOWN)(IMMEDIATE)(DEFERRED)(SIMUL));
+                      (UNKNOWN)(IMMEDIATE)(DEFERRED)(SIMUL)(DUAL));
 
 class KeyProperty final {
  public:

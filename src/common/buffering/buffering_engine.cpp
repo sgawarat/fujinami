@@ -69,6 +69,14 @@ void Engine::update(NextStageContext& context) noexcept {
       current_flow_ = FlowType::UNKNOWN;
       break;
     }
+    case FlowType::DUAL: {
+      FUJINAMI_LOGGING_SECTION("DUAL");
+      if (dual_key_flow_.update(state_) == FlowResult::CONTINUE) break;
+      state_.set_next_layout();
+      context.send_press(state_.active_keyset(), state_.layout());
+      current_flow_ = FlowType::UNKNOWN;
+      break;
+    }
   }
 }
 
@@ -85,6 +93,8 @@ bool Engine::is_idle() const noexcept {
       return deferred_key_flow_.is_idle(state_);
     case FlowType::SIMUL:
       return simul_key_flow_.is_idle(state_);
+    case FlowType::DUAL:
+      return dual_key_flow_.is_idle(state_);
   }
   return state_.events().empty();
 }
@@ -106,6 +116,8 @@ Clock::time_point Engine::timeout_tp() const noexcept {
       return deferred_key_flow_.timeout_tp();
     case FlowType::SIMUL:
       return simul_key_flow_.timeout_tp();
+    case FlowType::DUAL:
+      return dual_key_flow_.timeout_tp();
   }
   return Clock::time_point::max();
 }
@@ -186,6 +198,20 @@ void Engine::update(const KeyPressEvent& event,
       FUJINAMI_LOG(trace, "reset SIMUL flow");
       FUJINAMI_LOGGING_SECTION("SIMUL");
       switch (simul_key_flow_.reset(state_)) {
+        case FlowResult::CONTINUE:
+          current_flow_ = FlowType::SIMUL;
+          break;
+        case FlowResult::DONE:
+          state_.set_next_layout();
+          context.send_press(state_.active_keyset(), state_.layout());
+          break;
+      }
+      break;
+    }
+    case FlowType::DUAL: {
+      FUJINAMI_LOG(trace, "reset DUAL flow");
+      FUJINAMI_LOGGING_SECTION("DUAL");
+      switch (dual_key_flow_.reset(state_)) {
         case FlowResult::CONTINUE:
           current_flow_ = FlowType::SIMUL;
           break;

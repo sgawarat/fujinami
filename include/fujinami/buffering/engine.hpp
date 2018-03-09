@@ -5,6 +5,7 @@
 #include "flow/immediate.hpp"
 #include "flow/deferred.hpp"
 #include "flow/simul.hpp"
+#include "flow/dual.hpp"
 
 namespace fujinami {
 namespace mapping {
@@ -53,6 +54,7 @@ class Engine {
   ImmediateKeyFlow immediate_key_flow_;
   DeferredKeyFlow deferred_key_flow_;
   SimulKeyFlow simul_key_flow_;
+  DualKeyFlow dual_key_flow_;
 };
 }  // namespace buffering
 }  // namespace fujinami
