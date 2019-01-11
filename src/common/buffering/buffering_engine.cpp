@@ -155,6 +155,23 @@ void Engine::update(const KeyPressEvent& event,
     }
     prev_im_status_ = im_status;
   }
+#elif defined(FUJINAMI_PLATFORM_LINUX)
+  // TODO IMから状態を取る
+  if (auto_layout_) {
+    if (event.key() == to_key(KEY_GRAVE) || event.key() == to_key(KEY_PAUSE)) {
+      if (prev_im_status_) {
+        FUJINAMI_LOG(trace, "IM is disabled");
+        state_.set_layout(default_layout_);
+        context.send_layout(default_layout_);
+        prev_im_status_ = false;
+      } else if (!prev_im_status_) {
+        FUJINAMI_LOG(trace, "IM is enabled");
+        state_.set_layout(default_im_layout_);
+        context.send_layout(default_im_layout_);
+        prev_im_status_ = true;
+      }
+    }
+  }
 #endif
 
   // 登録されたフローにキーイベントを投げる。

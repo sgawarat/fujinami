@@ -20,7 +20,7 @@ f::Keyboard keyboard;
 std::shared_ptr<f::KeyboardConfig> keyboard_config;
 }  // namespace
 
-bool init() noexcept;
+bool init(int, char**) noexcept;
 void terminate() noexcept;
 
 FUJINAMI_LOGGING_DEFINE_PRINT(inline, input_event, ie,
@@ -30,7 +30,7 @@ FUJINAMI_LOGGING_DEFINE_PRINT(inline, input_event, ie,
                                os << sep << "code:" << ie.code;
                                os << sep << "value:" << ie.value;));
 
-int main(int, char**) {
+int main(int argc, char* argv[]) {
   // HACK: wait to flush RETURN key event
   sleep(1);
 
@@ -40,7 +40,7 @@ int main(int, char**) {
     return EXIT_FAILURE;
   }
 
-  if (!init()) return EXIT_FAILURE;
+  if (!init(argc, argv)) return EXIT_FAILURE;
 
   // main loop
   input_event ie;
@@ -105,7 +105,7 @@ int main(int, char**) {
   return EXIT_SUCCESS;
 }
 
-bool init() noexcept {
+bool init(int argc, char* argv[]) noexcept {
   // ロガー
   fl::Logger::init();
   fl::Logger::init_tls("H");
@@ -115,6 +115,13 @@ bool init() noexcept {
   //  FUJINAMI_LOG(error, "application instance already exists");
   //  return EXIT_SUCCESS;
   //}
+
+  // コマンドオプション
+  if (argc != 2) {
+    FUJINAMI_LOG(error, "USAGE: fujinami /dev/input/eventX");
+    return false;
+  }
+  const char* path = argv[1];
 
   // KeyboardLayout
   try {
@@ -136,7 +143,7 @@ bool init() noexcept {
   }
 
   // keyboard hook
-  if (!f::Input::init("/dev/input/event0", "/dev/uinput")) {
+  if (!f::Input::init(path, "/dev/uinput")) {
     perror("hook");
     FUJINAMI_LOG(error, "failed to enable keyboard hook");
     return false;
